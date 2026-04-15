@@ -87,9 +87,10 @@ export interface Paginated<T> {
 // ─── ORDERS ──────────────────────────────────────────────────────────────────
 
 export const ordersApi = {
-  list: (params?: Record<string,string>) => {
+  list: async (params?: Record<string,string>) => {
     const q = params ? '?' + new URLSearchParams(params) : '';
-    return apiFetch<Order[]>(`/api/v1/orders${q}`);
+    const r = await apiFetch<Order[] | { items: Order[] }>(`/api/v1/orders${q}`);
+    return Array.isArray(r) ? r : (r?.items ?? []);
   },
   get: (id: number) => apiFetch<Order>(`/api/v1/orders/${id}`),
   confirmDate: (id: number, confirmedDate: string) =>
@@ -151,9 +152,10 @@ export const catalogApi = {
 // ─── INVOICES ────────────────────────────────────────────────────────────────
 
 export const invoicesApi = {
-  list: (params?: Record<string,string>) => {
+  list: async (params?: Record<string,string>) => {
     const q = params ? '?' + new URLSearchParams(params) : '';
-    return apiFetch<Invoice[]>(`/api/v1/invoices${q}`);
+    const r = await apiFetch<Invoice[] | { items: Invoice[] }>(`/api/v1/invoices${q}`);
+    return Array.isArray(r) ? r : (r?.items ?? []);
   },
   get: (id: number) => apiFetch<Invoice>(`/api/v1/invoices/${id}`),
   upload: (formData: FormData) =>

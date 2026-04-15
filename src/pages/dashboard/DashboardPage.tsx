@@ -15,8 +15,8 @@ export function DashboardPage() {
       ordersApi.list(),
       invoicesApi.list(),
     ]).then(([o, i]) => {
-      setOrders(o);
-      setInvoices(i);
+      setOrders(Array.isArray(o) ? o : (o as any).items ?? []);
+      setInvoices(Array.isArray(i) ? i : (i as any).items ?? []);
     }).finally(() => setLoading(false));
   }, []);
 
