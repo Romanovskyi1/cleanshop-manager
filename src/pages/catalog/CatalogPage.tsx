@@ -84,7 +84,7 @@ export function CatalogPage() {
         certifications: form.certifications.split(',').map(s => s.trim()).filter(Boolean),
       };
       if (editing) await catalogApi.update(editing.id, body);
-      else         await catalogApi.create(body);
+      else         await catalogApi.create({ ...body, sku: form.sku.trim() });
       setShowForm(false);
       load();
     } catch (e: any) { alert(e.message); }
@@ -155,10 +155,12 @@ export function CatalogPage() {
             { key: 'actions', label: '', width: 160,
               render: r => (
                 <div style={{ display: 'flex', gap: 6 }} onClick={e => e.stopPropagation()}>
-                  <Btn size="sm" variant="ghost"
-                    onClick={() => { setStockId(r.id); setStockVal(String(r.stockPallets)); }}>
-                    Остаток
-                  </Btn>
+                  {admin && (
+                    <Btn size="sm" variant="ghost"
+                      onClick={() => { setStockId(r.id); setStockVal(String(r.stockPallets)); }}>
+                      Остаток
+                    </Btn>
+                  )}
                   {admin && (
                     <Btn size="sm" variant="secondary" onClick={() => openEdit(r)} disabled={loadingEdit === r.id}>
                       {loadingEdit === r.id ? '...' : 'Ред.'}
