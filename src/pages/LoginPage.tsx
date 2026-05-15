@@ -2,12 +2,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate }          from 'react-router-dom';
 import { useAuthStore }         from '../store/auth';
-import { loginDev, setTokens }  from '../api/client';
+import { loginDev, loginCredentials, setTokens }  from '../api/client';
 
 export function LoginPage() {
   const { login, user, isLoading, error } = useAuthStore();
   const navigate = useNavigate();
-  const [devId,  setDevId]  = useState('');
+  const [devId,    setDevId]    = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [credErr,  setCredErr]  = useState('');
+  const [credLoad, setCredLoad] = useState(false);
   const isDev = import.meta.env.DEV;
 
   // Если открыто в Telegram — авторизуемся автоматически
@@ -23,6 +27,20 @@ export function LoginPage() {
   useEffect(() => {
     if (user) navigate('/manager', { replace: true });
   }, [user]);
+
+  const handleCredLogin = async () => {
+    if (!username.trim() || !password.trim()) return;
+    setCredErr('');
+    setCredLoad(true);
+    try {
+      const u = await loginCredentials(username.trim(), password.trim());
+      useAuthStore.getState().setUser(u);
+    } catch (e: unknown) {
+      setCredErr(e instanceof Error ? e.message : 'Ошибка входа');
+    } finally {
+      setCredLoad(false);
+    }
+  };
 
   const handleDevLogin = async () => {
     if (!devId.trim()) return;
@@ -75,14 +93,57 @@ export function LoginPage() {
           </div>
         )}
 
-        {/* Telegram кнопка — только если не в TMA */}
+        {/* Форма логин/пароль — если не в TMA */}
         {!isLoading && !(window as any).Telegram?.WebApp?.initData && (
-          <div style={{
-            background: '#F5F7FB', borderRadius: 10,
-            padding: '16px', marginBottom: 16, fontSize: 13, color: '#9AA3B8',
-          }}>
-            Откройте панель через Telegram-бота.<br />
-            <span style={{ color: '#1355C1', fontWeight: 500 }}>@cleanshop_manager_bot</span>
+          <div>
+            {credErr && (
+              <div style={{
+                background: '#FFE5E8', borderRadius: 8,
+                padding: '10px 14px', fontSize: 13,
+                color: '#C0152A', marginBottom: 12, textAlign: 'left',
+              }}>
+                {credErr}
+              </div>
+            )}
+            <input
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              placeholder="Логин"
+              autoComplete="username"
+              onKeyDown={e => e.key === 'Enter' && handleCredLogin()}
+              style={{
+                width: '100%', height: 42, padding: '0 12px', fontSize: 14,
+                border: '0.5px solid #E8ECF4', borderRadius: 8,
+                outline: 'none', color: '#3D4660', marginBottom: 10,
+                boxSizing: 'border-box',
+              }}
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Пароль"
+              autoComplete="current-password"
+              onKeyDown={e => e.key === 'Enter' && handleCredLogin()}
+              style={{
+                width: '100%', height: 42, padding: '0 12px', fontSize: 14,
+                border: '0.5px solid #E8ECF4', borderRadius: 8,
+                outline: 'none', color: '#3D4660', marginBottom: 16,
+                boxSizing: 'border-box',
+              }}
+            />
+            <button
+              onClick={handleCredLogin}
+              disabled={credLoad}
+              style={{
+                width: '100%', height: 44, background: '#1355C1',
+                color: '#fff', border: 'none', borderRadius: 10,
+                fontSize: 15, fontWeight: 600, cursor: credLoad ? 'default' : 'pointer',
+                opacity: credLoad ? 0.7 : 1,
+              }}
+            >
+              {credLoad ? 'Вход...' : 'Войти'}
+            </button>
           </div>
         )}
 

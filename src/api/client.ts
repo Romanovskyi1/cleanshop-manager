@@ -29,9 +29,23 @@ export async function loginTelegram(initData: string) {
   return data.user as AuthUser;
 }
 
-// ── Авторизация через логин/пароль (для веб-панели без Telegram) ──────────
-// В реальном проде добавить endpoint POST /auth/credentials
-// Здесь — временный мок для dev-режима
+// ── Авторизация через логин/пароль (для веб-панели) ─────────────────────
+export async function loginCredentials(username: string, password: string) {
+  const res = await fetch(`${API_URL}/api/v1/auth/login`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ username, password }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.message ?? 'Неверный логин или пароль');
+  }
+  const data = await res.json();
+  setTokens(data.accessToken, data.refreshToken);
+  return data.user as AuthUser;
+}
+
+// ── Dev-авторизация (только локально) ────────────────────────────────────
 export async function loginDev(telegramId: string) {
   // DEV ONLY: получаем токен напрямую передав telegram_id
   // Убрать в продакшне, заменить на OAuth или SSO
