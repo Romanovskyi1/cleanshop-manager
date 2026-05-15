@@ -139,7 +139,7 @@ export function CatalogPage() {
             { key: 'sku',      label: 'SKU',    width: 120,
               render: r => <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#0A1F3D' }}>{r.sku}</span> },
             { key: 'name',     label: 'Название',
-              render: r => <span style={{ fontWeight: 500, color: '#0A1F3D' }}>{r.name.ru ?? r.name.en ?? r.sku}</span> },
+              render: r => <span style={{ fontWeight: 500, color: '#0A1F3D' }}>{r.name || r.sku}</span> },
             { key: 'category', label: 'Категория', width: 110 },
             { key: 'priceEur', label: 'Цена/шт', width: 100,
               render: r => `€ ${fmt(r.priceEur)}` },

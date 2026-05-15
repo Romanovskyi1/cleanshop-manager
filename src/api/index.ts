@@ -25,7 +25,7 @@ export interface I18nString {
 }
 
 export interface Product {
-  id: number; sku: string; name: Record<string,string>;
+  id: number; sku: string; name: string;
   category: string; priceEur: number; boxPriceEur: number;
   palletPriceEur: number; unitsPerBox: number; boxesPerPallet: number;
   stockPallets: number; stockStatus: 'ok'|'low'|'out';
@@ -106,6 +106,24 @@ export const ordersApi = {
 
 // ─── CATALOG ─────────────────────────────────────────────────────────────────
 
+/** Тело запроса создания/обновления товара (name — I18n объект, не строка) */
+export interface ProductWriteBody {
+  sku?:            string;
+  name?:           I18nString;
+  description?:    I18nString;
+  category?:       string;
+  priceEur?:       number;
+  unitsPerBox?:    number;
+  boxesPerPallet?: number;
+  palletWeightKg?: number;
+  boxWeightKg?:    number;
+  stockPallets?:   number;
+  isEco?:          boolean;
+  isHit?:          boolean;
+  isNew?:          boolean;
+  certifications?: string[];
+}
+
 export const catalogApi = {
   list: (params?: Record<string,string>) => {
     const q = params ? '?' + new URLSearchParams(params) : '';
@@ -113,9 +131,9 @@ export const catalogApi = {
   },
   get:    (id: number) => apiFetch<Product>(`/api/v1/catalog/${id}`),
   getRaw: (id: number) => apiFetch<RawProduct>(`/api/v1/catalog/${id}/raw`),
-  create: (body: Partial<Product>) =>
+  create: (body: ProductWriteBody) =>
     apiFetch<Product>('/api/v1/catalog', { method: 'POST', body: JSON.stringify(body) }),
-  update: (id: number, body: Partial<Product>) =>
+  update: (id: number, body: ProductWriteBody) =>
     apiFetch<Product>(`/api/v1/catalog/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   updateStock: (id: number, stockPallets: number) =>
     apiFetch(`/api/v1/catalog/${id}/stock`, {
