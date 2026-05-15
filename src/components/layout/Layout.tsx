@@ -9,7 +9,7 @@ const NAV = [
   { to: '/manager/invoices',  icon: '📄', label: 'Инвойсы' },
   { to: '/manager/chat',      icon: '💬', label: 'Чат' },
   { to: '/manager/clients',   icon: '🏢', label: 'Клиенты' },
-  { to: '/manager/catalog',   icon: '📦', label: 'Каталог',  adminOnly: true },
+  { to: '/manager/catalog',   icon: '📦', label: 'Каталог' },
 ];
 
 export function Layout() {
@@ -33,7 +33,7 @@ export function Layout() {
         </div>
 
         <nav className={styles.nav}>
-          {NAV.filter(n => !n.adminOnly || admin).map(n => (
+          {NAV.map(n => (
             <NavLink
               key={n.to}
               to={n.to}

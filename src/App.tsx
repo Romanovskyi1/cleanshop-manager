@@ -45,15 +45,7 @@ export default function App() {
           <Route path="chat"       element={<ChatPage />} />
           <Route path="clients"    element={<ClientsPage />} />
 
-          {/* Admin only — ProtectedRoute с requireAdmin внутри Layout */}
-          <Route
-            path="catalog"
-            element={
-              <ProtectedRoute requireAdmin>
-                <CatalogPage />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="catalog" element={<CatalogPage />} />
         </Route>
 
         {/* Fallback */}
