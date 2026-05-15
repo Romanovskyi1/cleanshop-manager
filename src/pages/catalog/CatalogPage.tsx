@@ -61,6 +61,7 @@ export function CatalogPage() {
   };
 
   const save = async () => {
+    console.log('[save] called, editing=', editing?.id, 'form=', JSON.stringify({ boxWeightKg: form.boxWeightKg }));
     setSaving(true);
     try {
       const body = {
