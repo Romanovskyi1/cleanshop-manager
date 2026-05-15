@@ -30,8 +30,9 @@ export function CatalogPage() {
   const [editing,  setEditing]  = useState<RawProduct | null>(null);
   const [form,     setForm]     = useState(emptyForm());
   const [saving,   setSaving]   = useState(false);
-  const [stockId,  setStockId]  = useState<number | null>(null);
-  const [stockVal, setStockVal] = useState('');
+  const [stockId,    setStockId]    = useState<number | null>(null);
+  const [stockVal,   setStockVal]   = useState('');
+  const [loadingEdit, setLoadingEdit] = useState<number | null>(null);
 
   const load = () =>
     catalogApi.list({ limit: '100', ...(search ? { search } : {}), ...(catFilter ? { category: catFilter } : {}) })
@@ -42,6 +43,7 @@ export function CatalogPage() {
 
   const openCreate = () => { setEditing(null); setForm(emptyForm()); setShowForm(true); };
   const openEdit = async (p: Product) => {
+    setLoadingEdit(p.id);
     try {
       const raw = await catalogApi.getRaw(p.id);
       setEditing(raw);
@@ -61,6 +63,7 @@ export function CatalogPage() {
       });
       setShowForm(true);
     } catch (e: any) { alert(e.message); }
+    finally { setLoadingEdit(null); }
   };
 
   const save = async () => {
@@ -157,7 +160,11 @@ export function CatalogPage() {
                     onClick={() => { setStockId(r.id); setStockVal(String(r.stockPallets)); }}>
                     Остаток
                   </Btn>
-                  {admin && <Btn size="sm" variant="secondary" onClick={() => openEdit(r)}>Ред.</Btn>}
+                  {admin && (
+                    <Btn size="sm" variant="secondary" onClick={() => openEdit(r)} disabled={loadingEdit === r.id}>
+                      {loadingEdit === r.id ? '...' : 'Ред.'}
+                    </Btn>
+                  )}
                   {admin && <Btn size="sm" variant="danger" onClick={() => hide(r.id)}>Скрыть</Btn>}
                 </div>
               )},
