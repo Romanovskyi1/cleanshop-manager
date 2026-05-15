@@ -71,7 +71,6 @@ export function CatalogPage() {
     setSaving(true);
     try {
       const body = {
-        sku:            form.sku,
         category:       form.category,
         name:           form.name,
         description:    form.description,
