@@ -20,6 +20,10 @@ export interface User {
   isActive: boolean; createdAt: string;
 }
 
+export interface I18nString {
+  ru?: string; en?: string; de?: string; pl?: string;
+}
+
 export interface Product {
   id: number; sku: string; name: Record<string,string>;
   category: string; priceEur: number; boxPriceEur: number;
@@ -27,6 +31,18 @@ export interface Product {
   stockPallets: number; stockStatus: 'ok'|'low'|'out';
   isEco: boolean; isHit: boolean; isNew: boolean; isActive: boolean;
   certifications: string[]; images: string[]; boxWeightKg?: number;
+}
+
+/** Сырые данные товара с I18n полями — возвращает GET /catalog/:id/raw */
+export interface RawProduct {
+  id: number; sku: string;
+  name: I18nString; description: I18nString | null;
+  category: string; priceEur: number;
+  unitsPerBox: number; boxesPerPallet: number;
+  boxWeightKg?: number; palletWeightKg?: number;
+  stockPallets: number;
+  isEco: boolean; isHit: boolean; isNew: boolean; isActive: boolean;
+  certifications: string[]; images: string[];
 }
 
 export interface Order {
@@ -96,6 +112,7 @@ export const catalogApi = {
     return apiFetch<Paginated<Product>>(`/api/v1/catalog${q}`);
   },
   get:    (id: number) => apiFetch<Product>(`/api/v1/catalog/${id}`),
+  getRaw: (id: number) => apiFetch<RawProduct>(`/api/v1/catalog/${id}/raw`),
   create: (body: Partial<Product>) =>
     apiFetch<Product>('/api/v1/catalog', { method: 'POST', body: JSON.stringify(body) }),
   update: (id: number, body: Partial<Product>) =>

@@ -1,6 +1,6 @@
 // src/pages/catalog/CatalogPage.tsx
 import { useEffect, useState } from 'react';
-import { catalogApi, Product }  from '../../api';
+import { catalogApi, Product, RawProduct } from '../../api';
 import { useAuthStore, isAdmin } from '../../store/auth';
 import { PageHeader, Card, Table, Badge, Btn, Modal, Input, fmt } from '../../components/ui';
 
@@ -27,7 +27,7 @@ export function CatalogPage() {
   const [search,   setSearch]   = useState('');
   const [catFilter,setCatFilter] = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [editing,  setEditing]  = useState<Product | null>(null);
+  const [editing,  setEditing]  = useState<RawProduct | null>(null);
   const [form,     setForm]     = useState(emptyForm());
   const [saving,   setSaving]   = useState(false);
   const [stockId,  setStockId]  = useState<number | null>(null);
@@ -41,23 +41,26 @@ export function CatalogPage() {
   useEffect(() => { load(); }, [search, catFilter]);
 
   const openCreate = () => { setEditing(null); setForm(emptyForm()); setShowForm(true); };
-  const openEdit   = (p: Product) => {
-    setEditing(p);
-    setForm({
-      sku:           p.sku,
-      category:      p.category,
-      name:          { ru: p.name.ru??'', en: p.name.en??'', de: p.name.de??'', pl: p.name.pl??'' },
-      description:   { ru:'', en:'', de:'', pl:'' },
-      priceEur:      String(p.priceEur),
-      unitsPerBox:   String(p.unitsPerBox),
-      boxesPerPallet: String(p.boxesPerPallet),
-      palletWeightKg: '',
-      boxWeightKg:   String(p.boxWeightKg ?? ''),
-      stockPallets:  String(p.stockPallets),
-      isEco:  p.isEco, isHit: p.isHit, isNew: p.isNew,
-      certifications: p.certifications.join(', '),
-    });
-    setShowForm(true);
+  const openEdit = async (p: Product) => {
+    try {
+      const raw = await catalogApi.getRaw(p.id);
+      setEditing(raw);
+      setForm({
+        sku:            raw.sku,
+        category:       raw.category,
+        name:           { ru: raw.name.ru??'', en: raw.name.en??'', de: raw.name.de??'', pl: raw.name.pl??'' },
+        description:    { ru: raw.description?.ru??'', en: raw.description?.en??'', de: raw.description?.de??'', pl: raw.description?.pl??'' },
+        priceEur:       String(raw.priceEur),
+        unitsPerBox:    String(raw.unitsPerBox),
+        boxesPerPallet: String(raw.boxesPerPallet),
+        palletWeightKg: String(raw.palletWeightKg ?? ''),
+        boxWeightKg:    String(raw.boxWeightKg ?? ''),
+        stockPallets:   String(raw.stockPallets),
+        isEco:  raw.isEco, isHit: raw.isHit, isNew: raw.isNew,
+        certifications: raw.certifications.join(', '),
+      });
+      setShowForm(true);
+    } catch (e: any) { alert(e.message); }
   };
 
   const save = async () => {
@@ -258,8 +261,9 @@ export function CatalogPage() {
                     const files = Array.from(e.target.files ?? []);
                     if (!files.length) return;
                     try {
-                      const updated = await catalogApi.uploadImages(editing.id, files);
-                      setEditing(updated);
+                      await catalogApi.uploadImages(editing.id, files);
+                      const refreshed = await catalogApi.getRaw(editing.id);
+                      setEditing(refreshed);
                       load();
                     } catch (err: any) { alert(err.message); }
                   }}
